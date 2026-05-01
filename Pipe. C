@@ -1,0 +1,28 @@
+from multiprocessing import Process, Pipe
+
+def sender(conn1, conn2):
+    msg = "hello world"
+    print("[parent] Sending to child:", msg)
+    conn1.send(msg)
+
+    newmsg = conn1.recv()
+    print("[parent] Received from child:", newmsg)
+
+def receiver(conn1, conn2):
+    msg = conn2.recv()
+    print("[child] Received from parent:", msg)
+
+    newmsg = "Hi"
+    conn2.send(newmsg)
+
+if __name__ == "__main__":
+    parent_conn, child_conn = Pipe()
+
+    p1 = Process(target=sender, args=(parent_conn, child_conn))
+    p2 = Process(target=receiver, args=(parent_conn, child_conn))
+
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
